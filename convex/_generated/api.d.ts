@@ -20,9 +20,12 @@ import type * as http from "../http.js";
 import type * as labels from "../labels.js";
 import type * as projects from "../projects.js";
 import type * as search from "../search.js";
+import type * as sections from "../sections.js";
 import type * as seed from "../seed.js";
 import type * as subTodos from "../subTodos.js";
 import type * as todos from "../todos.js";
+import type * as users from "../users.js";
+import type * as workspaces from "../workspaces.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -39,9 +42,12 @@ declare const fullApi: ApiFromModules<{
   labels: typeof labels;
   projects: typeof projects;
   search: typeof search;
+  sections: typeof sections;
   seed: typeof seed;
   subTodos: typeof subTodos;
   todos: typeof todos;
+  users: typeof users;
+  workspaces: typeof workspaces;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

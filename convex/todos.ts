@@ -168,9 +168,11 @@ export const createATodo = mutation({
   args: {
     taskName: v.string(),
     description: v.optional(v.string()),
+    source: v.optional(v.string()),
     priority: v.number(),
     dueDate: v.number(),
     projectId: v.id("projects"),
+    sectionId: v.optional(v.id("sections")),
     labelId: v.id("labels"),
     assigneeId: v.optional(v.id("users")),
   },
@@ -179,9 +181,11 @@ export const createATodo = mutation({
     {
       taskName,
       description,
+      source,
       priority,
       dueDate,
       projectId,
+      sectionId,
       labelId,
       assigneeId,
     }
@@ -190,21 +194,77 @@ export const createATodo = mutation({
       const userId = await handleUserId(ctx);
       if (!userId) return null;
 
+      // Compute position at end of section (or project if no section).
+      const siblings = sectionId
+        ? await ctx.db
+            .query("todos")
+            .withIndex("by_section", (q) => q.eq("sectionId", sectionId))
+            .collect()
+        : await ctx.db
+            .query("todos")
+            .withIndex("by_project", (q) => q.eq("projectId", projectId))
+            .filter((q) => q.eq(q.field("sectionId"), undefined))
+            .collect();
+      const position =
+        siblings.reduce(
+          (max, t) => ((t.position ?? 0) > max ? t.position ?? 0 : max),
+          0
+        ) + 1000;
+
       return await ctx.db.insert("todos", {
         userId,
         assigneeId,
         taskName,
         description,
+        source,
         priority,
         dueDate,
         projectId,
+        sectionId,
         labelId,
         isCompleted: false,
+        position,
       });
     } catch (err) {
       console.log("Error occurred during createATodo mutation", err);
       return null;
     }
+  },
+});
+
+export const moveTask = mutation({
+  args: {
+    taskId: v.id("todos"),
+    sectionId: v.optional(v.id("sections")),
+    position: v.number(),
+  },
+  handler: async (ctx, { taskId, sectionId, position }) => {
+    const userId = await handleUserId(ctx);
+    if (!userId) return null;
+    return await ctx.db.patch(taskId, { sectionId, position });
+  },
+});
+
+export const updateTask = mutation({
+  args: {
+    taskId: v.id("todos"),
+    taskName: v.optional(v.string()),
+    description: v.optional(v.string()),
+    source: v.optional(v.string()),
+    priority: v.optional(v.number()),
+    dueDate: v.optional(v.number()),
+    sectionId: v.optional(v.id("sections")),
+    labelId: v.optional(v.id("labels")),
+    assigneeId: v.optional(v.id("users")),
+  },
+  handler: async (ctx, { taskId, ...patch }) => {
+    const userId = await handleUserId(ctx);
+    if (!userId) return null;
+    const filtered: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(patch)) {
+      if (v !== undefined) filtered[k] = v;
+    }
+    return await ctx.db.patch(taskId, filtered);
   },
 });
 

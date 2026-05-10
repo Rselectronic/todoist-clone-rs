@@ -41,7 +41,7 @@ export default function SearchForm() {
               </FormItem>
             )}
           ></FormField>
-          <Button className="hover:bg-orange-600 px-4">
+          <Button className="px-4" type="submit" variant="secondary">
             <SearchIcon className="h-4 w-4" />
           </Button>
         </div>

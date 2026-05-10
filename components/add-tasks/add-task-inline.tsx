@@ -51,10 +51,12 @@ export default function AddTaskInline({
   setShowAddTask,
   parentTask,
   projectId: myProjectId,
+  sectionId,
 }: {
   setShowAddTask: Dispatch<SetStateAction<boolean>>;
   parentTask?: Doc<"todos">;
   projectId?: Id<"projects">;
+  sectionId?: Id<"sections">;
 }) {
   const { toast } = useToast();
   const projects = useQuery(api.projects.getProjects) ?? [];
@@ -103,14 +105,15 @@ export default function AddTaskInline({
 
     const mutationId = parentId
       ? await createASubTodo({ ...baseArgs, parentId })
-      : await createATodo(baseArgs);
+      : await createATodo({ ...baseArgs, sectionId });
 
     if (mutationId) {
       toast({
-        title: "🦄 Created a task!",
-        duration: 3000,
+        title: "✨ Created a task!",
+        duration: 2000,
       });
       form.reset({ ...defaultValues });
+      setShowAddTask(false);
     }
   }
   return (
