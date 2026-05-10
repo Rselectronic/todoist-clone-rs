@@ -1,21 +1,11 @@
-import { Menu } from "lucide-react";
+import { CheckSquare, Menu } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { primaryNavItems } from "@/utils";
-import Image from "next/image";
 import SearchForm from "./search-form";
 import UserProfile from "./user-profile";
-
-import todovexLogo from "@/public/logo/todovex.svg";
 
 export default function MobileNav({
   navTitle = "",
@@ -41,7 +31,7 @@ export default function MobileNav({
               <Link
                 key={idx}
                 href={link}
-                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2  hover:text-foreground"
+                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 hover:text-foreground"
               >
                 {icon}
                 {name}
@@ -52,22 +42,6 @@ export default function MobileNav({
               <p className="flex flex-1 text-base">My Projects</p>
             </div>
           </nav>
-          <div className="mt-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upgrade to Pro</CardTitle>
-                <CardDescription>
-                  Unlock all features and get unlimited access to our support
-                  team.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button size="sm" className="w-full">
-                  Upgrade
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </SheetContent>
       </Sheet>
       <div className="flex items-center md:justify-between w-full gap-1 md:gap-2 py-2">
@@ -81,8 +55,8 @@ export default function MobileNav({
         <div className="place-content-center w-full flex-1">
           <SearchForm />
         </div>
-        <div className="place-content-center w-12 h-12 lg:w-16 lg:h-20">
-          <Image alt="logo" src={todovexLogo} />
+        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-900 text-white lg:h-10 lg:w-10">
+          <CheckSquare className="h-5 w-5" />
         </div>
       </div>
     </header>

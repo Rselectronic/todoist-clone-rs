@@ -74,6 +74,7 @@ export default defineSchema({
   ...authTables,
   todos: defineTable({
     userId: v.id("users"),
+    assigneeId: v.optional(v.id("users")),
     projectId: v.id("projects"),
     labelId: v.id("labels"),
     taskName: v.string(),
@@ -81,14 +82,12 @@ export default defineSchema({
     dueDate: v.number(),
     priority: v.optional(v.float64()),
     isCompleted: v.boolean(),
-    embedding: v.optional(v.array(v.float64())),
-  }).vectorIndex("by_embedding", {
-    vectorField: "embedding",
-    dimensions: 1536,
-    filterFields: ["userId"],
-  }),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_assignee", ["assigneeId"]),
   subTodos: defineTable({
     userId: v.id("users"),
+    assigneeId: v.optional(v.id("users")),
     projectId: v.id("projects"),
     labelId: v.id("labels"),
     parentId: v.id("todos"),
@@ -97,12 +96,7 @@ export default defineSchema({
     dueDate: v.number(),
     priority: v.optional(v.float64()),
     isCompleted: v.boolean(),
-    embedding: v.optional(v.array(v.float64())),
-  }).vectorIndex("by_embedding", {
-    vectorField: "embedding",
-    dimensions: 1536,
-    filterFields: ["userId"],
-  }),
+  }).index("by_parent", ["parentId"]),
   labels: defineTable({
     userId: v.union(v.id("users"), v.null()),
     name: v.string(),

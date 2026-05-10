@@ -1,0 +1,18 @@
+{
+  "name": "RS Tasks",
+  "short_name": "RS Tasks",
+  "description": "RS PCB Assembly's internal task manager.",
+  "start_url": "/loggedin",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ]
+}

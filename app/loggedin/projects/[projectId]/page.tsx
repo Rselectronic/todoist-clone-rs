@@ -1,6 +1,5 @@
 "use client";
 import { AddTaskWrapper } from "@/components/add-tasks/add-task-button";
-import SuggestMissingTasks from "@/components/add-tasks/suggest-tasks";
 import MobileNav from "@/components/nav/mobile-nav";
 import SideBar from "@/components/nav/side-bar";
 import DeleteProject from "@/components/projects/delete-project";
@@ -46,7 +45,6 @@ export default function ProjectIdPage() {
                 {projectName || "Project"}
               </h1>
               <div className="flex gap-6 lg:gap-12 items-center">
-                <SuggestMissingTasks projectId={projectId} />
                 <DeleteProject projectId={projectId} />
               </div>
             </div>

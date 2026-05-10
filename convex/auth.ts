@@ -14,7 +14,7 @@ async function getViewerId(ctx: { auth: Auth }) {
 export async function handleUserId(ctx: { auth: Auth }) {
   const viewerId = await getViewerId(ctx);
 
-  if (viewerId !== null) {
+  if (viewerId === null) {
     console.error("user is not authenticated");
   }
 

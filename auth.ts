@@ -31,6 +31,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   adapter: ConvexAdapter,
   callbacks: {
+    async signIn({ account, profile }) {
+      if (account?.provider !== "google") return false;
+      const email = (profile as { email?: string } | undefined)?.email;
+      const allowedDomain = process.env.RS_TASKS_ALLOWED_DOMAIN ?? "rspcbassembly.com";
+      return email?.toLowerCase().endsWith(`@${allowedDomain}`) ?? false;
+    },
     async session({ session }) {
       const privateKey = await importPKCS8(
         process.env.CONVEX_AUTH_PRIVATE_KEY!,

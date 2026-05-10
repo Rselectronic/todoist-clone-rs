@@ -33,9 +33,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { GET_STARTED_PROJECT_ID } from "@/utils";
 
 const FormSchema = z.object({
   taskName: z.string().min(2, {
@@ -57,25 +56,21 @@ export default function AddTaskInline({
   parentTask?: Doc<"todos">;
   projectId?: Id<"projects">;
 }) {
-  const projectId =
-    myProjectId ||
-    parentTask?.projectId ||
-    (GET_STARTED_PROJECT_ID as Id<"projects">);
-
-  const labelId =
-    parentTask?.labelId || ("k579xwsz7e2y73rxexkrg2f5j96tzt4f" as Id<"labels">);
-  const priority = parentTask?.priority?.toString() || "1";
-  const parentId = parentTask?._id;
-
   const { toast } = useToast();
   const projects = useQuery(api.projects.getProjects) ?? [];
   const labels = useQuery(api.labels.getLabels) ?? [];
 
-  const createASubTodoEmbeddings = useAction(
-    api.subTodos.createSubTodoAndEmbeddings
-  );
+  // Fallback to the first available project/label (typically the seeded
+  // "Inbox" system project and "General" system label).
+  const projectId =
+    myProjectId || parentTask?.projectId || (projects[0]?._id as Id<"projects">);
+  const labelId =
+    parentTask?.labelId || (labels[0]?._id as Id<"labels">);
+  const priority = parentTask?.priority?.toString() || "1";
+  const parentId = parentTask?._id;
 
-  const createTodoEmbeddings = useAction(api.todos.createTodoAndEmbeddings);
+  const createASubTodo = useMutation(api.subTodos.createASubTodo);
+  const createATodo = useMutation(api.todos.createATodo);
 
   const defaultValues = {
     taskName: "",
@@ -95,44 +90,27 @@ export default function AddTaskInline({
     const { taskName, description, priority, dueDate, projectId, labelId } =
       data;
 
-    if (projectId) {
-      if (parentId) {
-        //subtodo
-        const mutationId = createASubTodoEmbeddings({
-          parentId,
-          taskName,
-          description,
-          priority: parseInt(priority),
-          dueDate: moment(dueDate).valueOf(),
-          projectId: projectId as Id<"projects">,
-          labelId: labelId as Id<"labels">,
-        });
+    if (!projectId) return;
 
-        if (mutationId !== undefined) {
-          toast({
-            title: "🦄 Created a task!",
-            duration: 3000,
-          });
-          form.reset({ ...defaultValues });
-        }
-      } else {
-        const mutationId = createTodoEmbeddings({
-          taskName,
-          description,
-          priority: parseInt(priority),
-          dueDate: moment(dueDate).valueOf(),
-          projectId: projectId as Id<"projects">,
-          labelId: labelId as Id<"labels">,
-        });
+    const baseArgs = {
+      taskName,
+      description,
+      priority: parseInt(priority),
+      dueDate: moment(dueDate).valueOf(),
+      projectId: projectId as Id<"projects">,
+      labelId: labelId as Id<"labels">,
+    };
 
-        if (mutationId !== undefined) {
-          toast({
-            title: "🦄 Created a task!",
-            duration: 3000,
-          });
-          form.reset({ ...defaultValues });
-        }
-      }
+    const mutationId = parentId
+      ? await createASubTodo({ ...baseArgs, parentId })
+      : await createATodo(baseArgs);
+
+    if (mutationId) {
+      toast({
+        title: "🦄 Created a task!",
+        duration: 3000,
+      });
+      form.reset({ ...defaultValues });
     }
   }
   return (

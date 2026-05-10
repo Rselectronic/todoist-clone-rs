@@ -15,8 +15,6 @@ import { api } from "@/convex/_generated/api";
 import { useEffect, useState } from "react";
 import Task from "../todos/task";
 import { AddTaskWrapper } from "./add-task-button";
-import SuggestMissingTasks from "./suggest-tasks";
-import { deleteATodo } from "@/convex/todos";
 import { useToast } from "../ui/use-toast";
 
 export default function AddTaskDialog({ data }: { data: Doc<"todos"> }) {
@@ -87,20 +85,9 @@ export default function AddTaskDialog({ data }: { data: Doc<"todos"> }) {
         <DialogTitle>{taskName}</DialogTitle>
         <DialogDescription>
           <p className="my-2 capitalize">{description}</p>
-          <div className="flex items-center gap-1 mt-12 border-b-2 border-gray-100 pb-2 flex-wrap sm:justify-between lg:gap-0 ">
-            <div className="flex gap-1">
-              <ChevronDown className="w-5 h-5 text-primary" />
-              <p className="font-bold flex text-sm text-gray-900">Sub-tasks</p>
-            </div>
-            <div>
-              <SuggestMissingTasks
-                projectId={projectId}
-                taskName={taskName}
-                description={description}
-                parentId={_id}
-                isSubTask={true}
-              />
-            </div>
+          <div className="flex items-center gap-1 mt-12 border-b-2 border-gray-100 pb-2">
+            <ChevronDown className="w-5 h-5 text-primary" />
+            <p className="font-bold flex text-sm text-gray-900">Sub-tasks</p>
           </div>
           <div className="pl-4">
             {inCompletedSubtodosByProject.map((task) => {

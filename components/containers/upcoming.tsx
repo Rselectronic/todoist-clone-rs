@@ -7,7 +7,7 @@ import { AddTaskWrapper } from "../add-tasks/add-task-button";
 import Todos from "../todos/todos";
 
 export default function Upcoming() {
-  const groupTodosByDate = useQuery(api.todos.groupTodosByDate) ?? [];
+  const groupTodosByDate = useQuery(api.todos.groupTodosByDate) ?? {};
   const overdueTodos = useQuery(api.todos.overdueTodos) ?? [];
 
   if (groupTodosByDate === undefined || overdueTodos === undefined) {

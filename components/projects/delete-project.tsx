@@ -5,13 +5,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/convex/_generated/api";
-import { useAction, useMutation } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { EllipsisIcon, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useToast } from "../ui/use-toast";
 import { Id } from "@/convex/_generated/dataModel";
-import { GET_STARTED_PROJECT_ID } from "@/utils";
 
 export default function DeleteProject({
   projectId,
@@ -22,25 +21,25 @@ export default function DeleteProject({
   const { toast } = useToast();
   const router = useRouter();
 
+  const project = useQuery(api.projects.getProjectByProjectId, { projectId });
   const deleteProject = useAction(api.projects.deleteProjectAndItsTasks);
 
   const onSubmit = async () => {
-    if (projectId === GET_STARTED_PROJECT_ID) {
+    if (project?.type === "system") {
       toast({
         title: "🤗 Just a reminder",
         description: "System projects are protected from deletion.",
         duration: 3000,
       });
-    } else {
-      const deleteTaskId = await deleteProject({ projectId });
-
-      if (deleteTaskId !== undefined) {
-        toast({
-          title: "🗑️ Successfully created a project",
-          duration: 3000,
-        });
-        router.push(`/loggedin/projects`);
-      }
+      return;
+    }
+    const deleteTaskId = await deleteProject({ projectId });
+    if (deleteTaskId !== undefined) {
+      toast({
+        title: "🗑️ Project deleted",
+        duration: 3000,
+      });
+      router.push(`/loggedin/projects`);
     }
   };
 

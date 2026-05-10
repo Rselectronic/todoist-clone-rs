@@ -4,24 +4,24 @@ import { handleUserId } from "./auth";
 import { api } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
 
+// All authenticated RS team members see all projects (team-shared model).
 export const getProjects = query({
   args: {},
   handler: async (ctx) => {
     const userId = await handleUserId(ctx);
-    if (userId) {
-      const userProjects = await ctx.db
-        .query("projects")
-        .filter((q) => q.eq(q.field("userId"), userId))
-        .collect();
+    if (!userId) return [];
 
-      const systemProjects = await ctx.db
-        .query("projects")
-        .filter((q) => q.eq(q.field("type"), "system"))
-        .collect();
+    const userProjects = await ctx.db
+      .query("projects")
+      .filter((q) => q.eq(q.field("type"), "user"))
+      .collect();
 
-      return [...systemProjects, ...userProjects];
-    }
-    return [];
+    const systemProjects = await ctx.db
+      .query("projects")
+      .filter((q) => q.eq(q.field("type"), "system"))
+      .collect();
+
+    return [...systemProjects, ...userProjects];
   },
 });
 
@@ -31,14 +31,8 @@ export const getProjectByProjectId = query({
   },
   handler: async (ctx, { projectId }) => {
     const userId = await handleUserId(ctx);
-    if (userId) {
-      const project = await ctx.db
-        .query("projects")
-        .filter((q) => q.eq(q.field("_id"), projectId))
-        .collect();
-      return project?.[0] || null;
-    }
-    return null;
+    if (!userId) return null;
+    return await ctx.db.get(projectId);
   },
 });
 
@@ -49,19 +43,15 @@ export const createAProject = mutation({
   handler: async (ctx, { name }) => {
     try {
       const userId = await handleUserId(ctx);
-      if (userId) {
-        const newTaskId = await ctx.db.insert("projects", {
-          userId,
-          name,
-          type: "user",
-        });
-        return newTaskId;
-      }
+      if (!userId) return null;
 
-      return null;
+      return await ctx.db.insert("projects", {
+        userId,
+        name,
+        type: "user",
+      });
     } catch (err) {
       console.log("Error occurred during createAProject mutation", err);
-
       return null;
     }
   },
@@ -74,17 +64,10 @@ export const deleteProject = mutation({
   handler: async (ctx, { projectId }) => {
     try {
       const userId = await handleUserId(ctx);
-      if (userId) {
-        const taskId = await ctx.db.delete(projectId);
-        //query todos and map through them and delete
-
-        return taskId;
-      }
-
-      return null;
+      if (!userId) return null;
+      return await ctx.db.delete(projectId);
     } catch (err) {
       console.log("Error occurred during deleteProject mutation", err);
-
       return null;
     }
   },
@@ -100,14 +83,13 @@ export const deleteProjectAndItsTasks = action({
         projectId,
       });
 
-      const promises = Promise.allSettled(
+      await Promise.allSettled(
         allTasks.map(async (task: Doc<"todos">) =>
           ctx.runMutation(api.todos.deleteATodo, {
             taskId: task._id,
           })
         )
       );
-      const statuses = await promises;
 
       await ctx.runMutation(api.projects.deleteProject, {
         projectId,
